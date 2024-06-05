@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-screen justify-center items-center">
+  <div class="flex min-h-screen justify-center items-center">
     <div v-if="isLoading">
       <div class="flex items-center space-x-4 mb-2 justify-center">
         <Skeleton class="h-12 w-12 rounded-full" />
@@ -55,21 +55,62 @@
             <a target="_blank" :href="computedSingleRepo.html_url"> View on GitHub </a>
           </p>
         </CardContent>
+
+        <CardFooter
+          v-if="new Date(computedSingleRepo.created_at) > new Date('2024-06-04T22:03:23Z')"
+          class="flex justify-center gap-4"
+        >
+          <Dialog v-model:open="open">
+            <DialogTrigger asChild>
+              <Button variant="outline" size="lg" class="text-xl"> Edit </Button>
+            </DialogTrigger>
+            <ModalView
+              title="Edit Repository"
+              subtitle="Make changes to your profile here. Click save when you're done."
+              action="Save Changes"
+              :repoName="computedSingleRepo.name"
+              :description="computedSingleRepo.description"
+              method="PATCH"
+              @close-dialog="handleDialogClose"
+            />
+          </Dialog>
+
+          <AlertDialog v-model:open="openDeleteModal">
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" class="text-xl"> Delete </Button>
+            </AlertDialogTrigger>
+            <DeleteModal @close-dialog="handleDeleteModal" :repoName="computedSingleRepo.name" />
+          </AlertDialog>
+        </CardFooter>
       </Card>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
 import api from '@/services/api'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter
+} from '@/components/ui/card'
+import { AlertDialog, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Dialog, DialogTrigger } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 import NetworkError from '../components/NetworkError.vue'
+import ModalView from '../components/ModalView.vue'
+import DeleteModal from '../components/DeleteModal.vue'
 
 const route = useRoute()
+const open = ref(false)
+const openDeleteModal = ref(false)
 const formatDate = (dateString) => {
   const date = new Date(dateString)
   return date.toLocaleString() // Format date according to user's locale
@@ -85,6 +126,14 @@ const computedSingleRepo = computed(() => {
 
   return data.value.data
 })
+
+const handleDialogClose = () => {
+  open.value = false
+}
+
+const handleDeleteModal = () => {
+  openDeleteModal.value = false
+}
 </script>
 
 <style scoped></style>

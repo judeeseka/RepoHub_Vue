@@ -33,5 +33,29 @@ export default {
 
   getSingleRepo(name, repo) {
     return api.get(`/repos/${name}/${repo}`)
+  },
+
+  postRepoData(payload) {
+    return api.post(`/user/repos`, {
+      name: payload.name,
+      description: payload.description,
+      homepage: 'https://github.com',
+      private: false
+    })
+  },
+
+  updateRepoData(owner, payload) {
+    return api.patch(`/repos/${owner}/${payload.repoName}`, {
+      name: payload.name,
+      description: payload.description,
+      homepage: 'https://github.com',
+      has_issues: true,
+      has_projects: true,
+      has_wiki: true
+    })
+  },
+
+  deleteRepoData(owner, payload) {
+    return api.delete(`/repos/${owner}/${payload.name}`)
   }
 }
